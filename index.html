@@ -104,6 +104,9 @@
         overflow-x: scroll;
         display: flex;
       }
+      .container::-webkit-scrollbar {
+        display: none;
+      }
 
       .coin-image {
         text-align: center;
@@ -157,6 +160,13 @@
       #sun {
         cursor: pointer;
       }
+      a {
+        color: #0c0d0e; /* Колір тексту посилань */
+      }
+
+      .dark-mode a {
+        color: #fff; /* Колір тексту посилань у темному режимі */
+      }
     </style>
   </head>
   <body>
@@ -184,6 +194,11 @@
     </div>
 
     <script>
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") {
+          location.reload();
+        }
+      });
       function toggleDarkMode() {
         const body = document.body;
         body.classList.toggle("dark-mode");
@@ -209,7 +224,7 @@
       async function fetchData() {
         try {
           const response = await fetch(
-            "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=pyrin%2Cclore-ai%2Calephium%2Cradiant%2Cergo%2Ckarlsen%2Cravencoin%2Cabelian%2Cdynex%2Cai-power-grid%2Ckiirocoin&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d%2C30d%2C200d%2C1y&locale=en"
+            "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=pyrin%2Cclore-ai%2Calephium%2Chypra%2Cradiant%2Cergo%2Ckarlsen%2Cravencoin%2Cabelian%2Cdynex%2Cai-power-grid%2Ckiirocoin&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d%2C30d%2C200d%2C1y&locale=en"
           );
 
           if (!response.ok) {
@@ -264,8 +279,6 @@
             coinImage.style.width = "30px";
 
             imageCell.appendChild(coinImage);
-
-            nameCell.textContent = name;
             priceCell.textContent = current_price.toFixed(6);
             high24hCell.textContent = high_24h.toFixed(6);
             change24hCell.textContent = price_change_percentage_24h_in_currency?.toFixed(2);
@@ -283,6 +296,19 @@
             row.appendChild(change30dCell);
             row.appendChild(change200dCell);
             row.appendChild(change1yCell);
+
+            const formattedSymbol = name.toLowerCase().replace(/[ .]/g, "-");
+
+            const coinLink = document.createElement("a");
+            coinLink.href = `https://www.coingecko.com/en/coins/${formattedSymbol}`;
+            coinLink.textContent = name;
+            coinLink.target = "_blank";
+
+            nameCell.addEventListener("click", function () {
+              window.open(coinLink.href, "_blank");
+            });
+
+            nameCell.appendChild(coinLink);
 
             const percentageData = [
               { cell: change24hCell, value: price_change_percentage_24h_in_currency },
@@ -317,10 +343,9 @@
 
       displayData();
 
-      // fetch("https://api.coingecko.com/api/v3/coins/list")
-      //   .then((response) => response.json())
-      //   .then((data) => console.log(data))
-      //   .catch((error) => console.error("Error fetching data:", error));
+      fetch("https://api.coingecko.com/api/v3/coins/list")
+        .then((response) => response.json())
+        .catch((error) => console.error("Error fetching data:", error));
     </script>
   </body>
 </html>
