@@ -190,6 +190,7 @@
             <th>30 day(%)</th>
             <th>200 day(%)</th>
             <th>1 Year(%)</th>
+            <th>09.02.24</th>
           </tr>
         </thead>
         <tbody id="coinTableBody"></tbody>
@@ -197,9 +198,28 @@
     </div>
 
     <script>
+      let reloadTimeout;
+      let lastInvisibleTime;
+
       document.addEventListener("visibilitychange", function () {
         if (document.visibilityState === "visible") {
-          location.reload();
+          // Сторінка стала видимою
+          clearTimeout(reloadTimeout);
+        } else {
+          // Сторінка стала невидимою
+          lastInvisibleTime = Date.now();
+          reloadTimeout = setTimeout(function () {
+            location.reload();
+          }, 5 * 60 * 1000);
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        if (document.visibilityState === "hidden" && lastInvisibleTime) {
+          const elapsedTime = Date.now() - lastInvisibleTime;
+          if (elapsedTime >= 30 * 1000) {
+            location.reload();
+          }
         }
       });
       function toggleDarkMode() {
@@ -227,7 +247,7 @@
       async function fetchData() {
         try {
           const response = await fetch(
-            "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=pyrin%2Cclore-ai%2Calephium%2Chypra%2Cradiant%2Cergo%2Ckarlsen%2Cravencoin%2Cabelian%2Cdynex%2Cai-power-grid%2Ckiirocoin&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d%2C30d%2C200d%2C1y&locale=en"
+            "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=pyrin%2Cclore-ai%2Cnexellia%2Calephium%2Chypra%2Cradiant%2Cergo%2Ckarlsen%2Cravencoin%2Cabelian%2Cdynex%2Cai-power-grid%2Ckiirocoin&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d%2C30d%2C200d%2C1y&locale=en"
           );
 
           if (!response.ok) {
@@ -247,6 +267,24 @@
           const coinData = await fetchData();
 
           const coinTableBody = document.getElementById("coinTableBody");
+
+          const hardCodeDifficulty = {
+            9.02: {
+              rvn: "57.29",
+              abel: "684.15",
+              aleph: "1.32",
+              erg: "1.65",
+              dnx: "64.79",
+              clore: "31.053",
+              rxd: "4.22",
+              aipg: "101.85",
+              kls: "38.86",
+              pyi: "191.46",
+              kiiro: "1.32",
+              nxl: "31.44",
+              hyp: "6.41",
+            },
+          };
 
           for (const coin of coinData) {
             const {
@@ -272,6 +310,7 @@
             const change30dCell = document.createElement("td");
             const change200dCell = document.createElement("td");
             const change1yCell = document.createElement("td");
+            const difficultyCell0902 = document.createElement("td");
 
             imageCell.classList.add("coin-image");
             nameCell.classList.add("coin-image-second");
@@ -290,6 +329,10 @@
             change200dCell.textContent = price_change_percentage_200d_in_currency?.toFixed(2);
             change1yCell.textContent = price_change_percentage_1y_in_currency?.toFixed(2);
 
+            difficultyCell0902.textContent = hardCodeDifficulty["9.02"][coin.symbol.toLowerCase()] + " Th/s";
+
+            console.log(difficultyCell0902);
+
             row.appendChild(imageCell);
             row.appendChild(nameCell);
             row.appendChild(priceCell);
@@ -299,6 +342,7 @@
             row.appendChild(change30dCell);
             row.appendChild(change200dCell);
             row.appendChild(change1yCell);
+            row.appendChild(difficultyCell0902);
 
             const formattedSymbol = name.toLowerCase().replace(/[ .]/g, "-");
 
@@ -346,9 +390,25 @@
 
       displayData();
 
-      fetch("https://api.coingecko.com/api/v3/coins/list")
-        .then((response) => response.json())
-        .catch((error) => console.error("Error fetching data:", error));
+      // async function getCurrentDifficulty() {
+      //   try {
+      //     const response = await fetch(
+      //       "https://github.com/alephium/alephium/api/src/main/scala/org/alephium/api/ApiModel.scala"
+      //     );
+      //     if (!response.ok) {
+      //       throw new Error(`HTTP error! Status: ${response.status}`);
+      //     }
+
+      //     const data = await response.json();
+      //     console.log("Current difficulty:", data.difficulty);
+      //     return data.difficulty;
+      //   } catch (error) {
+      //     console.error("Error:", error.message);
+      //   }
+      // }
+
+      // // Виклик функції
+      // getCurrentDifficulty();
     </script>
   </body>
 </html>
